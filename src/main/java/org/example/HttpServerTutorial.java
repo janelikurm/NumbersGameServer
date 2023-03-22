@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 
 
 public class HttpServerTutorial {
@@ -36,11 +37,13 @@ public class HttpServerTutorial {
     }
 
     private static class RequestHandler implements HttpHandler {
+        private String userInput;
 
         @Override
         public void handle(HttpExchange exchange) {
             try {
                 doHandle(exchange);
+                logRequest(LocalDateTime.now(), exchange, exchange.getResponseCode());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -57,29 +60,51 @@ public class HttpServerTutorial {
             }
         }
 
-        private void handleGuess(HttpExchange exchange) throws IOException {
-            String guess = getRequestPayload(exchange);
-
-            if (guess.isEmpty()) {
-                sendResponse(exchange, "Not valid input. Try something else!", 400);
+        private void handleNewGame(HttpExchange exchange) throws IOException {
+            userInput = "start";
+            if (numbersGame.gameStarted) {
+                sendResponse(exchange, "", 400);
             } else {
-                try {
-
-                    validateGameStarted();
-                    int intGuess = getAsInt(guess);
-                    validateRange(intGuess);
-
-                    sendResponse(exchange, String.valueOf(numbersGame.guess(intGuess)), 200);
-                } catch (RuntimeException e) {
-                    sendResponse(exchange, e.getMessage(), 400);
-                }
+                numbersGame.start();
+                sendResponse(exchange, "", 200);
             }
         }
 
-        private void validateGameStarted() {
-            if (!numbersGame.gameStarted) {
-                throw new RuntimeException("No game to play at the moment!");
+        private void handleGuess(HttpExchange exchange) throws IOException {
+            String guess = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            userInput = guess;
+            try {
+                validateEmptyInput(guess);
+                validateGameStarted();
+                int intGuess = getAsInt(guess);
+                validateRange(intGuess);
+
+                sendResponse(exchange, numbersGame.guess(intGuess).toString(), 200);
+            } catch (RuntimeException e) {
+                sendResponse(exchange, e.getMessage(), 400);
             }
+        }
+
+        private void handleEndGame(HttpExchange exchange) throws IOException {
+            userInput = "exit";
+            if (!numbersGame.gameStarted) {
+                sendResponse(exchange, "", 400);
+            } else {
+                numbersGame.end();
+                sendResponse(exchange, "", 200);
+            }
+        }
+
+        private void handleNotFound(HttpExchange exchange) throws IOException {
+            sendResponse(exchange, getHtml("res/NotFound.html"), 404);
+        }
+
+        private void validateEmptyInput(String guess) {
+            if (guess.isEmpty()) throw new RuntimeException("Not valid input. Try something else!");
+        }
+
+        private void validateGameStarted() {
+            if (!numbersGame.gameStarted) throw new RuntimeException("No game to play at the moment!");
         }
 
         private static int getAsInt(String input) {
@@ -91,35 +116,10 @@ public class HttpServerTutorial {
         }
 
         private void validateRange(int input) {
-            if (input < 1 || input > 100) {
-                throw new RuntimeException("Number must be between 1 and 100!");
-            }
-        }
-
-        private void handleNewGame(HttpExchange exchange) throws IOException {
-            if (numbersGame.gameStarted) {
-                sendResponse(exchange, "", 400);
-                return;
-            }
-            numbersGame.start();
-            sendResponse(exchange, "", 200);
-        }
-
-        private void handleEndGame(HttpExchange exchange) throws IOException {
-            if (!numbersGame.gameStarted) {
-                sendResponse(exchange, "", 400);
-                return;
-            }
-            numbersGame.end();
-            sendResponse(exchange, "", 200);
-        }
-
-        private void handleNotFound(HttpExchange exchange) throws IOException {
-            sendResponse(exchange, getHtml("res/NotFound.html"), 404);
+            if (input < 1 || input > 100) throw new RuntimeException("Number must be between 1 and 100!");
         }
 
         private void sendResponse(HttpExchange exchange, String response, int responseCode) throws IOException {
-            //logRequest(LocalDateTime.now(), exchange, responseCode);
             exchange.sendResponseHeaders(responseCode, response.length());
             try (OutputStream outputStream = exchange.getResponseBody()) {
                 outputStream.write(response.getBytes());
@@ -133,25 +133,26 @@ public class HttpServerTutorial {
                 file.createNewFile();
             }
             FileOutputStream fos = new FileOutputStream(file, true);
-            String log = "[" + date + "] " + exchange.getRequestMethod() + " " + exchange.getRequestURI() + " -> " + responseCode + getRequestPayload(exchange) + "\n";
+            String log = "[" + date + "] " + exchange.getRequestMethod() + " " + exchange.getRequestURI() + " -> " + responseCode + " " + userInput + "\n";
+            System.out.println(log);
             fos.write(log.getBytes());
             fos.close();
         }
 
-        private String getRequestPayload(HttpExchange exchange) throws IOException {
-            InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8);
-            BufferedReader br = new BufferedReader(isr);
-
-            int b;
-            StringBuilder buf = new StringBuilder(512);
-
-            while ((b = br.read()) != -1) {
-                buf.append((char) b);
-            }
-            br.close();
-            isr.close();
-            return buf.toString();
-        }
+//        private String getRequestPayload(HttpExchange exchange) throws IOException {
+//            InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8);
+//            BufferedReader br = new BufferedReader(isr);
+//
+//            int b;
+//            StringBuilder buf = new StringBuilder(512);
+//
+//            while ((b = br.read()) != -1) {
+//                buf.append((char) b);
+//            }
+//            br.close();
+//            isr.close();
+//            return buf.toString();
+//        }
 
     }
 }

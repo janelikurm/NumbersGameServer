@@ -10,12 +10,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="de8fe87e-83d4-4713-bab4-951011eb1bc5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/artifacts/untitled3_jar.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/META-INF/MANIFEST.MF" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/HttpServerTutorial.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/HttpServerTutorial.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/NumbersGame.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/NumbersGame.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -151,7 +147,7 @@
       <workItem from="1679409578511" duration="894000" />
       <workItem from="1679468359982" duration="1600000" />
       <workItem from="1679470382084" duration="4000" />
-      <workItem from="1679470510611" duration="15880000" />
+      <workItem from="1679470510611" duration="19610000" />
     </task>
     <task id="LOCAL-00001" summary="fixed server not replying to valid guesses">
       <created>1679468957031</created>
@@ -174,7 +170,14 @@
       <option name="project" value="LOCAL" />
       <updated>1679479128083</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Moved input validation from NumbersGame to HttpServerTutorial">
+      <created>1679492084124</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1679492084124</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -184,7 +187,8 @@
     <MESSAGE value="fixed server not replying to valid guesses" />
     <MESSAGE value="fixed empty string reply" />
     <MESSAGE value="changes for the error messages" />
-    <option name="LAST_COMMIT_MESSAGE" value="changes for the error messages" />
+    <MESSAGE value="Moved input validation from NumbersGame to HttpServerTutorial" />
+    <option name="LAST_COMMIT_MESSAGE" value="Moved input validation from NumbersGame to HttpServerTutorial" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/untitled3$HttpServerTutorial.ic" NAME="HttpServerTutorial Coverage Results" MODIFIED="1679468452634" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
