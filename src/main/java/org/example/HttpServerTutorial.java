@@ -16,7 +16,6 @@ public class HttpServerTutorial {
     /* rename newgame to start
     add validation to this class here
     fix logger, use variable? and print to console?
-    change exeptions
     temporarily diable guesscounter
     do a statistics variable etc
     refaktrrrrr
@@ -48,9 +47,7 @@ public class HttpServerTutorial {
         }
 
         private void doHandle(HttpExchange exchange) throws IOException {
-            String path = exchange.getRequestURI().getPath();
-            final String requestMethod = exchange.getRequestMethod();
-            String methodAndPath = requestMethod + " " + path;
+            String methodAndPath = exchange.getRequestMethod() + " " + exchange.getRequestURI().getPath();
 
             switch (methodAndPath) {
                 case "POST /start-game" -> handleNewGame(exchange);
@@ -62,17 +59,40 @@ public class HttpServerTutorial {
 
         private void handleGuess(HttpExchange exchange) throws IOException {
             String guess = getRequestPayload(exchange);
-            String numbersGameResponse = "";
 
-            if (!guess.equals("")) {
+            if (guess.isEmpty()) {
+                sendResponse(exchange, "Not valid input. Try something else!", 400);
+            } else {
                 try {
-                    numbersGameResponse = numbersGame.guess(guess) + " " + numbersGame.guessCounter;
-                    sendResponse(exchange, numbersGameResponse, 200);
+
+                    validateGameStarted();
+                    int intGuess = getAsInt(guess);
+                    validateRange(intGuess);
+
+                    sendResponse(exchange, String.valueOf(numbersGame.guess(intGuess)), 200);
                 } catch (RuntimeException e) {
                     sendResponse(exchange, e.getMessage(), 400);
                 }
-            } else {
-                sendResponse(exchange, "Not valid input. Try something else!", 400);
+            }
+        }
+
+        private void validateGameStarted() {
+            if (!numbersGame.gameStarted) {
+                throw new RuntimeException("No game to play at the moment!");
+            }
+        }
+
+        private static int getAsInt(String input) {
+            try {
+                return Integer.parseInt(input);
+            } catch (Exception e) {
+                throw new RuntimeException("This is not a number!");
+            }
+        }
+
+        private void validateRange(int input) {
+            if (input < 1 || input > 100) {
+                throw new RuntimeException("Number must be between 1 and 100!");
             }
         }
 
@@ -81,7 +101,7 @@ public class HttpServerTutorial {
                 sendResponse(exchange, "", 400);
                 return;
             }
-            numbersGame.newGame();
+            numbersGame.start();
             sendResponse(exchange, "", 200);
         }
 
@@ -90,7 +110,7 @@ public class HttpServerTutorial {
                 sendResponse(exchange, "", 400);
                 return;
             }
-            numbersGame.endGame();
+            numbersGame.end();
             sendResponse(exchange, "", 200);
         }
 
@@ -99,7 +119,7 @@ public class HttpServerTutorial {
         }
 
         private void sendResponse(HttpExchange exchange, String response, int responseCode) throws IOException {
-            logRequest(LocalDateTime.now(), exchange, responseCode);
+            //logRequest(LocalDateTime.now(), exchange, responseCode);
             exchange.sendResponseHeaders(responseCode, response.length());
             try (OutputStream outputStream = exchange.getResponseBody()) {
                 outputStream.write(response.getBytes());
@@ -113,7 +133,7 @@ public class HttpServerTutorial {
                 file.createNewFile();
             }
             FileOutputStream fos = new FileOutputStream(file, true);
-            String log = "[" + date + "] " + exchange.getRequestMethod() + " " + exchange.getRequestURI() + " -> " + responseCode + "\n";// :+ getRequestPayload(exchange) + "\n";
+            String log = "[" + date + "] " + exchange.getRequestMethod() + " " + exchange.getRequestURI() + " -> " + responseCode + getRequestPayload(exchange) + "\n";
             fos.write(log.getBytes());
             fos.close();
         }

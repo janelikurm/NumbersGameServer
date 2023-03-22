@@ -10,44 +10,41 @@ public class NumbersGame {
 
     public enum GuessResponse {LESS, EQUAL, BIGGER}
 
-    public void newGame() {
+    public void start() {
         this.gameStarted = true;
         randomNumber = (int) (Math.random() * 100 + 1);
         guessCounter = 0;
     }
 
-    public void endGame() {
+    public void end() {
         this.gameStarted = false;
     }
 
-    public GuessResponse guess(String input) {
-        if (!gameStarted) {
-            throw new RuntimeException("No game to play at the moment!");
-        }
+    public GuessResponse guess(int input) {
         guessCounter++;
-        int number = validate(input);
-        GuessResponse guessResponse = comparisonResult(number);
+        //int number = validate(input);
+        GuessResponse guessResponse = comparisonResult(input);
         if (guessResponse == EQUAL) {
-            endGame();
+            end();
         }
         return guessResponse;
     }
 
-    private int validate(String input) {
-        int number = tryConvertToInt(input);
-        if (number < 1 || number > 100) {
-            throw new ArithmeticException("Number must be between 1 and 100!");
-        }
-        return number;
-    }
+//    private int validate(String input) {
+//        int number = tryConvertToInt(input);
+//        if (number < 1 || number > 100) {
+//            throw new RuntimeException("Number must be between 1 and 100!");
+//        }
+//        return number;
+//    }
 
-    private int tryConvertToInt(String input) {
-        try {
-            return Integer.parseInt(input);
-        } catch (NumberFormatException numberFormatException) {
-            throw new NumberFormatException("This is not a number!");
-        }
-    }
+//    private int tryConvertToInt(String input) {
+//        try {
+//            return Integer.parseInt(input);
+//        } catch (Exception e) {
+//            throw new RuntimeException("This is not a number!");
+//        }
+//    }
 
     private GuessResponse comparisonResult(int userNumber) {
         if (userNumber < randomNumber) {
