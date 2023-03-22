@@ -66,8 +66,8 @@ public class HttpServerTutorial {
                 } catch (RuntimeException e) {
                     sendResponse(exchange, e.getMessage(), 400);
                 }
-            }else{
-                sendResponse(exchange, numbersGameResponse, 200);
+            } else {
+                sendResponse(exchange, "Not valid input. Try something else!", 400);
             }
         }
 
