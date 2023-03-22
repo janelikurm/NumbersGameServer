@@ -13,6 +13,14 @@ import java.time.LocalDateTime;
 
 
 public class HttpServerTutorial {
+    /* rename newgame to start
+    add validation to this class here
+    fix logger, use variable? and print to console?
+    change exeptions
+    temporarily diable guesscounter
+    do a statistics variable etc
+    refaktrrrrr
+     */
 
     static NumbersGame numbersGame = new NumbersGame();
 
@@ -31,31 +39,28 @@ public class HttpServerTutorial {
     private static class RequestHandler implements HttpHandler {
 
         @Override
-        public void handle(HttpExchange exchange) throws IOException {
-            switch (exchange.getRequestURI().getPath()) {
-                case "/start-game" -> {
-                    switch (exchange.getRequestMethod()) {
-                        case "POST" -> handleNewGame(exchange);
-                        default -> handleNotFound(exchange);
-                    }
-                }
-                case "/guess" -> {
-                    switch (exchange.getRequestMethod()) {
-                        case "POST" -> handleGuess(exchange);
-                        default -> handleNotFound(exchange);
-                    }
-                }
-                case "/end-game" -> {
-                    switch (exchange.getRequestMethod()) {
-                        case "POST" -> handleEndGame(exchange);
-                        default -> handleNotFound(exchange);
-                    }
-                }
+        public void handle(HttpExchange exchange) {
+            try {
+                doHandle(exchange);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        private void doHandle(HttpExchange exchange) throws IOException {
+            String path = exchange.getRequestURI().getPath();
+            final String requestMethod = exchange.getRequestMethod();
+            String methodAndPath = requestMethod + " " + path;
+
+            switch (methodAndPath) {
+                case "POST /start-game" -> handleNewGame(exchange);
+                case "POST /guess" -> handleGuess(exchange);
+                case "POST /end-game" -> handleEndGame(exchange);
                 default -> handleNotFound(exchange);
             }
         }
 
-        private static void handleGuess(HttpExchange exchange) throws IOException {
+        private void handleGuess(HttpExchange exchange) throws IOException {
             String guess = getRequestPayload(exchange);
             String numbersGameResponse = "";
 
@@ -71,7 +76,7 @@ public class HttpServerTutorial {
             }
         }
 
-        private static void handleNewGame(HttpExchange exchange) throws IOException {
+        private void handleNewGame(HttpExchange exchange) throws IOException {
             if (numbersGame.gameStarted) {
                 sendResponse(exchange, "", 400);
                 return;
@@ -80,7 +85,7 @@ public class HttpServerTutorial {
             sendResponse(exchange, "", 200);
         }
 
-        private static void handleEndGame(HttpExchange exchange) throws IOException {
+        private void handleEndGame(HttpExchange exchange) throws IOException {
             if (!numbersGame.gameStarted) {
                 sendResponse(exchange, "", 400);
                 return;
@@ -89,11 +94,11 @@ public class HttpServerTutorial {
             sendResponse(exchange, "", 200);
         }
 
-        private static void handleNotFound(HttpExchange exchange) throws IOException {
+        private void handleNotFound(HttpExchange exchange) throws IOException {
             sendResponse(exchange, getHtml("res/NotFound.html"), 404);
         }
 
-        private static void sendResponse(HttpExchange exchange, String response, int responseCode) throws IOException {
+        private void sendResponse(HttpExchange exchange, String response, int responseCode) throws IOException {
             logRequest(LocalDateTime.now(), exchange, responseCode);
             exchange.sendResponseHeaders(responseCode, response.length());
             try (OutputStream outputStream = exchange.getResponseBody()) {
@@ -102,26 +107,27 @@ public class HttpServerTutorial {
             }
         }
 
-        private static void logRequest(LocalDateTime date, HttpExchange exchange, int responseCode) throws IOException {
+        private void logRequest(LocalDateTime date, HttpExchange exchange, int responseCode) throws IOException {
             File file = new File("log.txt");
             if (!file.exists()) {
                 file.createNewFile();
             }
             FileOutputStream fos = new FileOutputStream(file, true);
-            String log = "[" + date + "] " + exchange.getRequestMethod() + " " + exchange.getRequestURI() + " -> " + responseCode + "\n";//+ getRequestPayload(exchange) + "\n";
+            String log = "[" + date + "] " + exchange.getRequestMethod() + " " + exchange.getRequestURI() + " -> " + responseCode + "\n";// :+ getRequestPayload(exchange) + "\n";
             fos.write(log.getBytes());
             fos.close();
         }
 
-        private static String getRequestPayload(HttpExchange exchange) throws IOException {
+        private String getRequestPayload(HttpExchange exchange) throws IOException {
             InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8);
             BufferedReader br = new BufferedReader(isr);
+
             int b;
             StringBuilder buf = new StringBuilder(512);
+
             while ((b = br.read()) != -1) {
                 buf.append((char) b);
             }
-
             br.close();
             isr.close();
             return buf.toString();

@@ -1,12 +1,14 @@
 package org.example;
 
+import static org.example.NumbersGame.GuessResponse.EQUAL;
+
 public class NumbersGame {
 
     private int randomNumber;
     public int guessCounter;
     public boolean gameStarted = false;
 
-    public enum gameResponse {LESS, EQUAL, BIGGER}
+    public enum GuessResponse {LESS, EQUAL, BIGGER}
 
     public void newGame() {
         this.gameStarted = true;
@@ -18,32 +20,42 @@ public class NumbersGame {
         this.gameStarted = false;
     }
 
-    public gameResponse guess(String input) {
+    public GuessResponse guess(String input) {
         if (!gameStarted) {
             throw new RuntimeException("No game to play at the moment!");
         }
         guessCounter++;
+        int number = validate(input);
+        GuessResponse guessResponse = comparisonResult(number);
+        if (guessResponse == EQUAL) {
+            endGame();
+        }
+        return guessResponse;
+    }
 
+    private int validate(String input) {
+        int number = tryConvertToInt(input);
+        if (number < 1 || number > 100) {
+            throw new ArithmeticException("Number must be between 1 and 100!");
+        }
+        return number;
+    }
+
+    private int tryConvertToInt(String input) {
         try {
-            int inputAsInt = Integer.parseInt(input);
-            if (inputAsInt < 1 || inputAsInt > 100) {
-                throw new ArithmeticException("Number must be between 1 and 100!");
-            }
-            return displayComparisonResult(inputAsInt);
-
+            return Integer.parseInt(input);
         } catch (NumberFormatException numberFormatException) {
             throw new NumberFormatException("This is not a number!");
         }
     }
 
-    private gameResponse displayComparisonResult(int userNumber) {
+    private GuessResponse comparisonResult(int userNumber) {
         if (userNumber < randomNumber) {
-            return gameResponse.LESS;
+            return GuessResponse.LESS;
         } else if (userNumber > randomNumber) {
-            return gameResponse.BIGGER;
+            return GuessResponse.BIGGER;
         } else {
-            endGame();
-            return gameResponse.EQUAL;
+            return EQUAL;
         }
     }
 }
