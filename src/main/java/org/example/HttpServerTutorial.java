@@ -14,13 +14,6 @@ import java.util.Arrays;
 
 
 public class HttpServerTutorial {
-    /* rename newgame to start
-    add validation to this class here
-    fix logger, use variable? and print to console?
-    temporarily diable guesscounter
-    do a statistics variable etc
-    refaktrrrrr
-     */
 
     static NumbersGame numbersGame = new NumbersGame();
 
@@ -138,21 +131,5 @@ public class HttpServerTutorial {
             fos.write(log.getBytes());
             fos.close();
         }
-
-//        private String getRequestPayload(HttpExchange exchange) throws IOException {
-//            InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8);
-//            BufferedReader br = new BufferedReader(isr);
-//
-//            int b;
-//            StringBuilder buf = new StringBuilder(512);
-//
-//            while ((b = br.read()) != -1) {
-//                buf.append((char) b);
-//            }
-//            br.close();
-//            isr.close();
-//            return buf.toString();
-//        }
-
     }
 }

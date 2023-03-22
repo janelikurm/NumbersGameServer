@@ -30,22 +30,6 @@ public class NumbersGame {
         return guessResponse;
     }
 
-//    private int validate(String input) {
-//        int number = tryConvertToInt(input);
-//        if (number < 1 || number > 100) {
-//            throw new RuntimeException("Number must be between 1 and 100!");
-//        }
-//        return number;
-//    }
-
-//    private int tryConvertToInt(String input) {
-//        try {
-//            return Integer.parseInt(input);
-//        } catch (Exception e) {
-//            throw new RuntimeException("This is not a number!");
-//        }
-//    }
-
     private GuessResponse comparisonResult(int userNumber) {
         if (userNumber < randomNumber) {
             return GuessResponse.LESS;
