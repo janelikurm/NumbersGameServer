@@ -10,8 +10,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="de8fe87e-83d4-4713-bab4-951011eb1bc5" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/NumbersGameStats.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/res/NotFound.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/HttpServerTutorial.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/HttpServerTutorial.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/NumbersGame.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/NumbersGame.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,6 +58,13 @@
       </state>
     </system>
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -72,7 +83,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "/home/vali-it/work/NumberGameServer",
+    "last_opened_file_path": "/home/vali-it/work/NumberGameServer/src/res",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -81,16 +92,18 @@
     "project.structure.last.edited": "Artifacts",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.43625",
+    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/res" />
       <recent name="$PROJECT_DIR$/src/main/java/org/example" />
     </key>
   </component>
-  <component name="RunManager">
-    <configuration name="HttpServerTutorial" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Application.HttpServerTutorial">
+    <configuration name="HttpServerTutorial" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.example.HttpServerTutorial" />
       <module name="untitled3.main" />
       <extension name="coverage">
@@ -132,7 +145,6 @@
       <list>
         <item itemvalue="JAR Application.untitled3-1.0-SNAPSHOT.jar" />
         <item itemvalue="Gradle.NumberGameServer [jar]" />
-        <item itemvalue="Application.HttpServerTutorial" />
       </list>
     </recent_temporary>
   </component>
@@ -147,7 +159,8 @@
       <workItem from="1679409578511" duration="894000" />
       <workItem from="1679468359982" duration="1600000" />
       <workItem from="1679470382084" duration="4000" />
-      <workItem from="1679470510611" duration="19610000" />
+      <workItem from="1679470510611" duration="20136000" />
+      <workItem from="1679496303670" duration="8892000" />
     </task>
     <task id="LOCAL-00001" summary="fixed server not replying to valid guesses">
       <created>1679468957031</created>
@@ -177,7 +190,21 @@
       <option name="project" value="LOCAL" />
       <updated>1679492084124</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="log method request moved to handle method">
+      <created>1679495816955</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1679495816955</updated>
+    </task>
+    <task id="LOCAL-00006" summary="removed unused lines">
+      <created>1679495882131</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1679495882131</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -188,7 +215,13 @@
     <MESSAGE value="fixed empty string reply" />
     <MESSAGE value="changes for the error messages" />
     <MESSAGE value="Moved input validation from NumbersGame to HttpServerTutorial" />
-    <option name="LAST_COMMIT_MESSAGE" value="Moved input validation from NumbersGame to HttpServerTutorial" />
+    <MESSAGE value="log method request moved to handle method" />
+    <MESSAGE value="removed unused lines" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed unused lines" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/untitled3$HttpServerTutorial.ic" NAME="HttpServerTutorial Coverage Results" MODIFIED="1679468452634" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">

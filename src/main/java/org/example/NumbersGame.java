@@ -5,7 +5,8 @@ import static org.example.NumbersGame.GuessResponse.EQUAL;
 public class NumbersGame {
 
     private int randomNumber;
-    public int guessCounter;
+
+    public NumbersGameStats stats = new NumbersGameStats();
     public boolean gameStarted = false;
 
     public enum GuessResponse {LESS, EQUAL, BIGGER}
@@ -13,7 +14,7 @@ public class NumbersGame {
     public void start() {
         this.gameStarted = true;
         randomNumber = (int) (Math.random() * 100 + 1);
-        guessCounter = 0;
+        stats.guessCounter = 0;
     }
 
     public void end() {
@@ -21,10 +22,10 @@ public class NumbersGame {
     }
 
     public GuessResponse guess(int input) {
-        guessCounter++;
-        //int number = validate(input);
+        stats.guessCounter++;
         GuessResponse guessResponse = comparisonResult(input);
         if (guessResponse == EQUAL) {
+            stats.updateStatsOnGameEnd();
             end();
         }
         return guessResponse;
