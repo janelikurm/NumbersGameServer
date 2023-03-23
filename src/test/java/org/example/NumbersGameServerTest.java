@@ -58,6 +58,16 @@ class NumbersGameServerTest {
         assertEquals(400, doRequest("/guess", "1000", "POST"));
         assertEquals(400, doRequest("/guess", "0", "POST"));
     }
+    @Test
+    void guessNumberStringInput() {
+        assertEquals(400, doRequest("/guess", "string", "POST"));
+        assertEquals(400, doRequest("/guess", "st68ng", "POST"));
+    }
+
+    @Test
+    void endGameIfNotEnded() {
+        assertEquals(200, doRequest("/end-game", "", "POST"));
+    }
 
     //        HttpResponse httpResponse = client.send("/start-game");
 //
