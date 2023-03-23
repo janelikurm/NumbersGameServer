@@ -13,11 +13,21 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 
-public class HttpServerTutorial {
+public class NumbersGameServer {
+
+//    Map<String, NumbersGame> sessions = new HashMap<>();
+//    public NumbersGame numbersGameBySession(String ip){
+//        sessions.putIfAbsent(ip, new NumbersGame());
+//        return sessions.get(ip);
+//    }
 
     static NumbersGame numbersGame = new NumbersGame();
+
 
     public static String getHtml(String path) throws IOException {
         return Files.readString(Path.of(path), StandardCharsets.UTF_8);
@@ -25,7 +35,7 @@ public class HttpServerTutorial {
 
     public static void main(String[] args) throws IOException {
         System.out.println("Working Directory = " + System.getProperty("user.dir"));
-        InetSocketAddress addr = new InetSocketAddress("localhost", 5555);
+        InetSocketAddress addr = new InetSocketAddress("0.0.0.0", 5555);
         HttpServer httpServer = HttpServer.create(addr, 0);
         httpServer.createContext("/", new RequestHandler());
         httpServer.start();
@@ -137,7 +147,8 @@ public class HttpServerTutorial {
                 file.createNewFile();
             }
             FileOutputStream fos = new FileOutputStream(file, true);
-            String log = "[" + date + "] " +
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+            String log = "[" + date.format(formatter) + "] " +
                     exchange.getRequestMethod() + " " +
                     exchange.getRequestURI() + " -> " +
                     responseCode + " " +
