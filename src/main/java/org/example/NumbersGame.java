@@ -14,6 +14,7 @@ public class NumbersGame {
     public void start() {
         this.gameStarted = true;
         randomNumber = (int) (Math.random() * 100 + 1);
+        System.out.println(randomNumber);
         stats.guessCounter = 0;
     }
 
