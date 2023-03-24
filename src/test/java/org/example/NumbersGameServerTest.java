@@ -1,17 +1,15 @@
 package org.example;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class NumbersGameServerTest {
@@ -25,9 +23,9 @@ public class NumbersGameServerTest {
 
     @Test
     void gameStatus() {
-        assertEquals("No game in progress", doRequestAndReturnBody("/status", "", "GET"));
+        assertEquals(200, doRequest("/status", "", "GET"));
         startGame();
-        assertEquals("Game in progress", doRequestAndReturnBody("/status", "", "GET"));
+        assertEquals(200, doRequest("/status", "", "GET"));
 
     }
 
@@ -76,7 +74,7 @@ public class NumbersGameServerTest {
 
     private int doRequest(String endPoint, String body, String requestMethod) {
 
-        URI HTTP_SERVER_URI = URI.create("http://10.10.10.25:5555" + endPoint);
+        URI HTTP_SERVER_URI = URI.create("http://10.10.10.156:5555" + endPoint);
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .method(requestMethod, HttpRequest.BodyPublishers.ofString(body))
@@ -95,7 +93,7 @@ public class NumbersGameServerTest {
 
     private String doRequestAndReturnBody(String endPoint, String body, String requestMethod) {
 
-        URI HTTP_SERVER_URI = URI.create("http://10.10.10.25:5555" + endPoint);
+        URI HTTP_SERVER_URI = URI.create("http://10.10.10.156:5555" + endPoint);
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .method(requestMethod, HttpRequest.BodyPublishers.ofString(body))

@@ -1,0 +1,8 @@
+{
+  "gamesCount": 4,
+  "guessCountPerGame": {
+    "min": 1,
+    "avg": 4.24,
+    "max": 134
+  }
+}

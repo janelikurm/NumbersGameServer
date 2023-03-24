@@ -1,5 +1,8 @@
 package org.example;
 
+
+import java.net.http.HttpResponse;
+
 public class NumbersGameStats {
 
     public int totalGames = 0;
@@ -19,6 +22,7 @@ public class NumbersGameStats {
 
     @Override
     public String toString() {
+
         return "Your stats:\n" +
                 "Total games: " + totalGames + "\n" +
                 "Best game: " + leastGuesses + " guesses" + "\n" +
@@ -26,4 +30,5 @@ public class NumbersGameStats {
                 "Avg. num of guesses: " + ((float) totalGuesses / totalGames) + " per game" + "\n" +
                 "Last game: " + lastGameGuesses + " guesses" + "\n";
     }
+
 }
