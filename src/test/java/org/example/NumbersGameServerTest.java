@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NumbersGameServerTest {
 
+    public static final String API_URL = "http://10.10.10.25:5555";
     public String stopNumberGameGuessing = "";
 
     @BeforeEach
@@ -74,7 +75,7 @@ public class NumbersGameServerTest {
 
     private int doRequest(String endPoint, String body, String requestMethod) {
 
-        URI HTTP_SERVER_URI = URI.create("http://10.10.10.156:5555" + endPoint);
+        URI HTTP_SERVER_URI = URI.create(API_URL + endPoint);
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .method(requestMethod, HttpRequest.BodyPublishers.ofString(body))
@@ -93,7 +94,7 @@ public class NumbersGameServerTest {
 
     private String doRequestAndReturnBody(String endPoint, String body, String requestMethod) {
 
-        URI HTTP_SERVER_URI = URI.create("http://10.10.10.156:5555" + endPoint);
+        URI HTTP_SERVER_URI = URI.create(API_URL + endPoint);
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .method(requestMethod, HttpRequest.BodyPublishers.ofString(body))
