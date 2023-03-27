@@ -14,17 +14,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 
 public class NumbersGameServer {
-
-//    Map<String, NumbersGame> sessions = new HashMap<>();
-//    public NumbersGame numbersGameBySession(String ip){
-//        sessions.putIfAbsent(ip, new NumbersGame());
-//        return sessions.get(ip);
-//    }
-
-    static NumbersGame numbersGame = new NumbersGame();
 
 
     public static String getHtml(String path) throws IOException {
@@ -43,6 +38,8 @@ public class NumbersGameServer {
     private static class RequestHandler implements HttpHandler {
         private String userInput = "";
 
+        Map<String, NumbersGame> sessions = new HashMap<>();
+
         @Override
         public void handle(HttpExchange exchange) {
             try {
@@ -56,66 +53,90 @@ public class NumbersGameServer {
 
         private void doHandle(HttpExchange exchange) throws IOException {
             String methodAndPath = exchange.getRequestMethod() + " " + exchange.getRequestURI().getPath();
-            switch (methodAndPath) {
-                case "GET /stats" -> handleStats(exchange);
-                case "GET /status" -> handleStatus(exchange);
-                case "POST /start-game" -> handleNewGame(exchange);
-                case "POST /guess" -> handleGuess(exchange);
-                case "POST /end-game" -> handleEndGame(exchange);
-                default -> handleNotFound(exchange);
+            String sessionId = exchange.getRequestHeaders().getFirst("sessionId");
+            if (!(sessionId.equals(""))) {
+                NumbersGame numbersGame = sessions.get(sessionId);
+                switch (methodAndPath) {
+                    case "GET /stats" -> handleStats(exchange, numbersGame, sessionId);
+                    case "GET /status" -> handleStatus(exchange, numbersGame, sessionId);
+                    case "POST /start-game" -> handleNewGame(exchange, numbersGame, sessionId);
+                    case "POST /guess" -> handleGuess(exchange, numbersGame, sessionId);
+                    case "POST /end-game" -> handleEndGame(exchange, numbersGame, sessionId);
+                    default -> handleNotFound(exchange, sessionId);
+                }
+            } else {
+                if (methodAndPath.equals("POST /login")) {
+                    handleLogin(exchange);
+                }
             }
+
+
+
         }
 
-        private void handleStats(HttpExchange exchange) throws IOException {
-            sendResponse(exchange, numbersGame.stats.toString(), 200);
+        private void handleLogin(HttpExchange exchange) throws IOException {
+            NumbersGame numbersGame = new NumbersGame();
+            String sessionId = String.valueOf(UUID.randomUUID());
+
+            sessions.put(sessionId, numbersGame);
+            sendResponse(exchange, "", 200, sessionId);
+            System.out.println(sessionId);
         }
 
-        private void handleStatus(HttpExchange exchange) throws IOException {
-            sendResponse(exchange, numbersGame.gameStarted ? "Game in progress" : "No game in progress", 200);
+        private void handleStats(HttpExchange exchange, NumbersGame numbersGame, String sessionId) throws IOException {
+            sendResponse(exchange, numbersGame.stats.toString(), 200, sessionId);
         }
 
-        private void handleNewGame(HttpExchange exchange) throws IOException {
+        private void handleStatus(HttpExchange exchange, NumbersGame numbersGame, String sessionId) throws IOException {
+            sendResponse(exchange, numbersGame.gameStarted ? "Game in progress" : "No game in progress", 200, sessionId);
+        }
+
+        private void handleNewGame(HttpExchange exchange, NumbersGame numbersGame, String sessionId) throws IOException {
+
+            System.out.println(sessionId);
+
             if (numbersGame.gameStarted) {
-                sendResponse(exchange, "", 400);
+                sendResponse(exchange, "", 400, sessionId);
             } else {
                 numbersGame.start();
-                sendResponse(exchange, "", 200);
+                sendResponse(exchange, "", 200, sessionId);
             }
         }
 
-        private void handleGuess(HttpExchange exchange) throws IOException {
+        private void handleGuess(HttpExchange exchange, NumbersGame numbersGame, String sessionId) throws IOException {
             userInput = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             try {
                 validateEmptyInput(userInput);
-                validateGameStarted();
+                validateGameStarted(numbersGame);
                 int intGuess = getAsInt(userInput);
                 validateRange(intGuess);
 
-                sendResponse(exchange, numbersGame.guess(intGuess).toString(), 200);
+                sendResponse(exchange, numbersGame.guess(intGuess).toString(), 200, sessionId);
             } catch (RuntimeException e) {
-                sendResponse(exchange, e.getMessage(), 400);
+                sendResponse(exchange, e.getMessage(), 400, sessionId);
             }
         }
 
-        private void handleEndGame(HttpExchange exchange) throws IOException {
+        private void handleEndGame(HttpExchange exchange, NumbersGame numbersGame, String sessionId) throws IOException {
             if (!numbersGame.gameStarted) {
-                sendResponse(exchange, "", 400);
+                sendResponse(exchange, "", 400, sessionId);
             } else {
                 numbersGame.end();
-                sendResponse(exchange, "", 200);
+                sendResponse(exchange, "", 200, sessionId);
             }
         }
 
-        private void handleNotFound(HttpExchange exchange) throws IOException {
+        private void handleNotFound(HttpExchange exchange, String sessionId) throws IOException {
             userInput = exchange.getRequestURI().getPath();
-            sendResponse(exchange, getHtml("src/res/NotFound.html"), 404);
+            sendResponse(exchange, getHtml("src/res/NotFound.html"), 404, sessionId);
         }
 
         private void validateEmptyInput(String guess) {
             if (guess.isEmpty()) throw new RuntimeException("Not valid input. Try something else!");
         }
 
-        private void validateGameStarted() {
+        private void validateGameStarted(NumbersGame numbersGame) {
+
             if (!numbersGame.gameStarted) throw new RuntimeException("No game to play at the moment!");
         }
 
@@ -131,8 +152,10 @@ public class NumbersGameServer {
             if (input < 1 || input > 100) throw new RuntimeException("Number must be between 1 and 100!");
         }
 
-        private void sendResponse(HttpExchange exchange, String response, int responseCode) throws IOException {
-            exchange.sendResponseHeaders(responseCode, response.length());
+        private void sendResponse(HttpExchange exchange, String response, int responseCode, String sessionId) throws IOException {
+            exchange.getResponseHeaders().set("sessionId", sessionId);
+
+                    exchange.sendResponseHeaders(responseCode, response.length());
             try (OutputStream outputStream = exchange.getResponseBody()) {
                 outputStream.write(response.getBytes());
                 outputStream.flush();
