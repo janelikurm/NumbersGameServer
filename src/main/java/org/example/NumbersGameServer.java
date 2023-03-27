@@ -35,7 +35,8 @@ public class NumbersGameServer {
         System.out.println("Server started, listening at: " + addr);
     }
 
-    private static class RequestHandler implements HttpHandler {
+    static class RequestHandler implements HttpHandler {
+        public static final String RESPONSE_HEADER_SESSION_ID = "X-SESSION-ID";
         private String userInput = "";
 
         Map<String, NumbersGame> sessions = new HashMap<>();
@@ -53,8 +54,15 @@ public class NumbersGameServer {
 
         private void doHandle(HttpExchange exchange) throws IOException {
             String methodAndPath = exchange.getRequestMethod() + " " + exchange.getRequestURI().getPath();
-            String sessionId = exchange.getRequestHeaders().getFirst("sessionId");
-            if (!(sessionId.equals(""))) {
+            String sessionId = exchange.getRequestHeaders().getFirst(RESPONSE_HEADER_SESSION_ID);
+
+            if (methodAndPath.equals("POST /login")) {
+                handleLogin(exchange);
+            }
+            else if (sessionId == null || !(sessions.containsKey(sessionId))) {
+                    sendResponse(exchange, "", 401, sessionId);
+                }
+            else {
                 NumbersGame numbersGame = sessions.get(sessionId);
                 switch (methodAndPath) {
                     case "GET /stats" -> handleStats(exchange, numbersGame, sessionId);
@@ -64,14 +72,7 @@ public class NumbersGameServer {
                     case "POST /end-game" -> handleEndGame(exchange, numbersGame, sessionId);
                     default -> handleNotFound(exchange, sessionId);
                 }
-            } else {
-                if (methodAndPath.equals("POST /login")) {
-                    handleLogin(exchange);
-                }
             }
-
-
-
         }
 
         private void handleLogin(HttpExchange exchange) throws IOException {
@@ -153,7 +154,7 @@ public class NumbersGameServer {
         }
 
         private void sendResponse(HttpExchange exchange, String response, int responseCode, String sessionId) throws IOException {
-            exchange.getResponseHeaders().set("sessionId", sessionId);
+            exchange.getResponseHeaders().set(RESPONSE_HEADER_SESSION_ID, sessionId);
 
                     exchange.sendResponseHeaders(responseCode, response.length());
             try (OutputStream outputStream = exchange.getResponseBody()) {

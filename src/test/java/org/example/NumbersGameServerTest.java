@@ -9,6 +9,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+import static org.example.NumbersGameServer.RequestHandler.RESPONSE_HEADER_SESSION_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -18,7 +19,7 @@ public class NumbersGameServerTest {
     public String stopNumberGameGuessing = "";
     static String sessionId = "";
 
-    @BeforeEach
+
     public void createAndStartSession() {
         doRequest("/login", "", "POST");
 
@@ -26,16 +27,23 @@ public class NumbersGameServerTest {
 
     @Test
     void gameStatus() {
+        createAndStartSession();
         assertEquals(200, doRequest("/status", "", "GET"));
-        startGame();
-        assertEquals(200, doRequest("/status", "", "GET"));
-
     }
 
     @Test
     void startGame() {
+        createAndStartSession();
         assertEquals(200, doRequest("/start-game", "", "POST"));
         assertEquals(400, doRequest("/start-game", "", "POST"));
+    }
+
+    @Test
+    void startGameWithWrongId() {
+        sessionId = "jsgdfjg";
+        assertEquals(401, doRequest("/start-game", "", "POST"));
+        sessionId = "389723730983";
+        assertEquals(401, doRequest("/start-game", "", "POST"));
     }
 
     @Test
@@ -59,6 +67,7 @@ public class NumbersGameServerTest {
 
     @Test
     void guessNumberStringInput() {
+        createAndStartSession();
         assertEquals(400, doRequest("/guess", "string", "POST"));
         assertEquals(400, doRequest("/guess", "st68ng", "POST"));
     }
@@ -76,18 +85,17 @@ public class NumbersGameServerTest {
     }
 
     private int doRequest(String endPoint, String body, String requestMethod) {
-
         URI HTTP_SERVER_URI = URI.create(API_URL + endPoint);
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .method(requestMethod, HttpRequest.BodyPublishers.ofString(body))
                 .uri(HTTP_SERVER_URI)
-                .header("sessionId", sessionId)
+                .header(RESPONSE_HEADER_SESSION_ID, sessionId)
                 .build();
 
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            sessionId = response.headers().allValues("sessionId").get(0);
+            sessionId = response.headers().allValues(RESPONSE_HEADER_SESSION_ID).get(0);
             return response.statusCode();
         } catch (IOException e) {
             throw new RuntimeException(e);
