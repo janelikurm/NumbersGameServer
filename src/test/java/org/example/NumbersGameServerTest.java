@@ -16,10 +16,12 @@ public class NumbersGameServerTest {
 
     public static final String API_URL = "http://10.10.10.25:5555";
     public String stopNumberGameGuessing = "";
+    static String sessionId = "";
 
     @BeforeEach
-    public void stopGame() {
-        doRequest("/end-game", "", "POST");
+    public void createAndStartSession() {
+        doRequest("/login", "", "POST");
+
     }
 
     @Test
@@ -80,10 +82,12 @@ public class NumbersGameServerTest {
         HttpRequest request = HttpRequest.newBuilder()
                 .method(requestMethod, HttpRequest.BodyPublishers.ofString(body))
                 .uri(HTTP_SERVER_URI)
+                .header("sessionId", sessionId)
                 .build();
 
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            sessionId = response.headers().allValues("sessionId").get(0);
             return response.statusCode();
         } catch (IOException e) {
             throw new RuntimeException(e);
