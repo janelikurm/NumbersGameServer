@@ -1,5 +1,7 @@
 package org.example;
 
+import java.net.http.HttpRequest;
+
 import static org.example.NumbersGame.GuessResponse.EQUAL;
 
 public class NumbersGame {
@@ -10,6 +12,8 @@ public class NumbersGame {
     public boolean gameStarted = false;
 
     public enum GuessResponse {LESS, EQUAL, BIGGER}
+
+    public static long creationTime;
 
     public void start() {
         this.gameStarted = true;

@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,6 +44,8 @@ public class NumbersGameServer {
 
         @Override
         public void handle(HttpExchange exchange) {
+
+            
             try {
                 doHandle(exchange);
                 logRequest(LocalDateTime.now(), exchange, exchange.getResponseCode());
@@ -81,7 +84,6 @@ public class NumbersGameServer {
 
             sessions.put(sessionId, numbersGame);
             sendResponse(exchange, "", 200, sessionId);
-            System.out.println(sessionId);
         }
 
         private void handleStats(HttpExchange exchange, NumbersGame numbersGame, String sessionId) throws IOException {
@@ -164,6 +166,7 @@ public class NumbersGameServer {
         }
 
         private void logRequest(LocalDateTime date, HttpExchange exchange, int responseCode) throws IOException {
+            String sessionId = exchange.getRequestHeaders().getFirst(RESPONSE_HEADER_SESSION_ID);
             File file = new File("log.txt");
             if (!file.exists()) {
                 file.createNewFile();
@@ -174,7 +177,8 @@ public class NumbersGameServer {
                     exchange.getRequestMethod() + " " +
                     exchange.getRequestURI() + " -> " +
                     responseCode + " " +
-                    (userInput.length() != 0 ? "'" + userInput + "'" : userInput) + "\n";
+                    (userInput.length() != 0 ? "'" + userInput + "'" : userInput) + "\n" +
+                    "SessionId: " + sessionId;
             System.out.println(log);
             fos.write(log.getBytes());
             fos.close();

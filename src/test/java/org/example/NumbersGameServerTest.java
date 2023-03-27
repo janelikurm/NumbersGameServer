@@ -1,6 +1,5 @@
 package org.example;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -74,9 +73,13 @@ public class NumbersGameServerTest {
 
     @Test
     void endGame() {
+        createAndStartSession();
         runGame();
         assertEquals(200, doRequest("/end-game", "", "POST"));
         assertEquals(400, doRequest("/end-game", "", "POST"));
+        sessionId = "jsgdfjg";
+        assertEquals(401, doRequest("/end-game", "", "POST"));
+
     }
 
     public void runGame() {
@@ -97,9 +100,7 @@ public class NumbersGameServerTest {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             sessionId = response.headers().allValues(RESPONSE_HEADER_SESSION_ID).get(0);
             return response.statusCode();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
@@ -118,9 +119,7 @@ public class NumbersGameServerTest {
             String responseBody = response.body();
             stopNumberGameGuessing = responseBody;
             return responseBody;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
