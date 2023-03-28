@@ -1,6 +1,8 @@
 package org.example;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.net.URI;
@@ -19,11 +21,6 @@ public class NumbersGameServerTest {
     static String sessionId = "";
 
 
-    public void createAndStartSession() {
-        doRequest("/login", "", "POST");
-
-    }
-
     @Test
     void gameStatus() {
         createAndStartSession();
@@ -39,14 +36,14 @@ public class NumbersGameServerTest {
 
     @Test
     void startGameWithWrongId() {
-        sessionId = "jsgdfjg";
+        sessionId = "invalidSessionId";
         assertEquals(401, doRequest("/start-game", "", "POST"));
         sessionId = "389723730983";
         assertEquals(401, doRequest("/start-game", "", "POST"));
     }
 
     @Test
-    void guessNumberGood() {
+    void guessNumberCorrectInput() {
         runGame();
         for (int i = 1; i <= 100; i++) {
             if (stopNumberGameGuessing.equals("LESS")) {
@@ -58,10 +55,12 @@ public class NumbersGameServerTest {
     }
 
     @Test
-    void guessNumberBad() {
+    void guessNumberOutOfBoundInput() {
         assertEquals(400, doRequest("/guess", "-10", "POST"));
         assertEquals(400, doRequest("/guess", "1000", "POST"));
         assertEquals(400, doRequest("/guess", "0", "POST"));
+        sessionId = "invalidSessionId";
+        assertEquals(401, doRequest("/guess", "", "POST"));
     }
 
     @Test
@@ -77,13 +76,16 @@ public class NumbersGameServerTest {
         runGame();
         assertEquals(200, doRequest("/end-game", "", "POST"));
         assertEquals(400, doRequest("/end-game", "", "POST"));
-        sessionId = "jsgdfjg";
+        sessionId = "invalidSessionId";
         assertEquals(401, doRequest("/end-game", "", "POST"));
-
     }
 
-    public void runGame() {
+    private void runGame() {
         doRequest("/start-game", "", "POST");
+    }
+
+    private void createAndStartSession() {
+        doRequest("/login", "", "POST");
 
     }
 

@@ -9,7 +9,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,15 +36,18 @@ public class NumbersGameServer {
     }
 
     static class RequestHandler implements HttpHandler {
-        public static final String RESPONSE_HEADER_SESSION_ID = "X-SESSION-ID";
+
+        static final String RESPONSE_HEADER_SESSION_ID = "X-SESSION-ID";
         private String userInput = "";
 
-        Map<String, NumbersGame> sessions = new HashMap<>();
+        Map<String, Map<String, Object>> sessions = new HashMap<>();
+        Map<String, Object> gameSession = new HashMap<>();
+
 
         @Override
         public void handle(HttpExchange exchange) {
 
-            
+
             try {
                 doHandle(exchange);
                 logRequest(LocalDateTime.now(), exchange, exchange.getResponseCode());
@@ -58,32 +60,49 @@ public class NumbersGameServer {
         private void doHandle(HttpExchange exchange) throws IOException {
             String methodAndPath = exchange.getRequestMethod() + " " + exchange.getRequestURI().getPath();
             String sessionId = exchange.getRequestHeaders().getFirst(RESPONSE_HEADER_SESSION_ID);
-
             if (methodAndPath.equals("POST /login")) {
                 handleLogin(exchange);
-            }
-            else if (sessionId == null || !(sessions.containsKey(sessionId))) {
-                    sendResponse(exchange, "", 401, sessionId);
-                }
-            else {
-                NumbersGame numbersGame = sessions.get(sessionId);
-                switch (methodAndPath) {
-                    case "GET /stats" -> handleStats(exchange, numbersGame, sessionId);
-                    case "GET /status" -> handleStatus(exchange, numbersGame, sessionId);
-                    case "POST /start-game" -> handleNewGame(exchange, numbersGame, sessionId);
-                    case "POST /guess" -> handleGuess(exchange, numbersGame, sessionId);
-                    case "POST /end-game" -> handleEndGame(exchange, numbersGame, sessionId);
-                    default -> handleNotFound(exchange, sessionId);
+            } else if (sessionId == null || !(sessions.containsKey(sessionId))) {
+                sendResponse(exchange, "", 401, sessionId);
+            } else {
+                NumbersGame numbersGame = (NumbersGame) sessions.get(sessionId).get("game");
+                try {
+                    switch (methodAndPath) {
+                        case "POST /start-game" -> handleNewGame(exchange, numbersGame, sessionId);
+                        case "POST /guess" -> handleGuess(exchange, numbersGame, sessionId);
+                        case "POST /end-game" -> handleEndGame(exchange, numbersGame, sessionId);
+                        case "GET /stats" -> handleStats(exchange, numbersGame, sessionId);
+                        case "GET /status" -> handleStatus(exchange, numbersGame, sessionId);
+                        default -> handleNotFound(exchange, sessionId);
+                    } findSessionAndUpdateTime(sessionId);
+                } catch (Exception e) {
+                    sendResponse(exchange, e.getMessage(), 401, sessionId);
                 }
             }
         }
 
+        private boolean checkSessionExpiration(String sessionId) {
+            Session currentSession = (Session) sessions.get(sessionId).get("session");
+            boolean isExpired = currentSession.isExpired();
+            System.out.println(isExpired);
+            return isExpired;
+        }
+
+        private void findSessionAndUpdateTime(String sessionId) {
+            Session currentSession = (Session) sessions.get(sessionId).get("session");
+            currentSession.lastActiveTime();
+        }
+
         private void handleLogin(HttpExchange exchange) throws IOException {
             NumbersGame numbersGame = new NumbersGame();
+            Session session = new Session();
             String sessionId = String.valueOf(UUID.randomUUID());
 
-            sessions.put(sessionId, numbersGame);
+            gameSession.put("game", numbersGame);
+            gameSession.put("session", session);
+            sessions.put(sessionId, gameSession);
             sendResponse(exchange, "", 200, sessionId);
+            findSessionAndUpdateTime(sessionId);
         }
 
         private void handleStats(HttpExchange exchange, NumbersGame numbersGame, String sessionId) throws IOException {
@@ -94,29 +113,38 @@ public class NumbersGameServer {
             sendResponse(exchange, numbersGame.gameStarted ? "Game in progress" : "No game in progress", 200, sessionId);
         }
 
+
         private void handleNewGame(HttpExchange exchange, NumbersGame numbersGame, String sessionId) throws IOException {
+            boolean isExpired = checkSessionExpiration(sessionId);
 
-            System.out.println(sessionId);
-
-            if (numbersGame.gameStarted) {
-                sendResponse(exchange, "", 400, sessionId);
+            if (!isExpired) {
+                if (numbersGame.gameStarted) {
+                    sendResponse(exchange, "", 400, sessionId);
+                } else {
+                    numbersGame.start();
+                    sendResponse(exchange, "", 200, sessionId);
+                }
             } else {
-                numbersGame.start();
-                sendResponse(exchange, "", 200, sessionId);
+                throw new RuntimeException("Session expired");
             }
         }
 
         private void handleGuess(HttpExchange exchange, NumbersGame numbersGame, String sessionId) throws IOException {
             userInput = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            try {
-                validateEmptyInput(userInput);
-                validateGameStarted(numbersGame);
-                int intGuess = getAsInt(userInput);
-                validateRange(intGuess);
+            boolean isExpired = checkSessionExpiration(sessionId);
+            if (!isExpired) {
+                try {
+                    validateEmptyInput(userInput);
+                    validateGameStarted(numbersGame);
+                    int intGuess = getAsInt(userInput);
+                    validateRange(intGuess);
 
-                sendResponse(exchange, numbersGame.guess(intGuess).toString(), 200, sessionId);
-            } catch (RuntimeException e) {
-                sendResponse(exchange, e.getMessage(), 400, sessionId);
+                    sendResponse(exchange, numbersGame.guess(intGuess).toString(), 200, sessionId);
+                } catch (RuntimeException e) {
+                    sendResponse(exchange, e.getMessage(), 400, sessionId);
+                }
+            } else {
+                throw new RuntimeException("Session expired");
             }
         }
 
@@ -158,7 +186,7 @@ public class NumbersGameServer {
         private void sendResponse(HttpExchange exchange, String response, int responseCode, String sessionId) throws IOException {
             exchange.getResponseHeaders().set(RESPONSE_HEADER_SESSION_ID, sessionId);
 
-                    exchange.sendResponseHeaders(responseCode, response.length());
+            exchange.sendResponseHeaders(responseCode, response.length());
             try (OutputStream outputStream = exchange.getResponseBody()) {
                 outputStream.write(response.getBytes());
                 outputStream.flush();
@@ -166,7 +194,7 @@ public class NumbersGameServer {
         }
 
         private void logRequest(LocalDateTime date, HttpExchange exchange, int responseCode) throws IOException {
-            String sessionId = exchange.getRequestHeaders().getFirst(RESPONSE_HEADER_SESSION_ID);
+            String sessionId = exchange.getResponseHeaders().getFirst(RESPONSE_HEADER_SESSION_ID);
             File file = new File("log.txt");
             if (!file.exists()) {
                 file.createNewFile();

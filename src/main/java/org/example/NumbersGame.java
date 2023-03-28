@@ -1,6 +1,6 @@
 package org.example;
 
-import java.net.http.HttpRequest;
+import java.time.LocalDateTime;
 
 import static org.example.NumbersGame.GuessResponse.EQUAL;
 
@@ -13,13 +13,15 @@ public class NumbersGame {
 
     public enum GuessResponse {LESS, EQUAL, BIGGER}
 
-    public static long creationTime;
+
 
     public void start() {
         this.gameStarted = true;
         randomNumber = (int) (Math.random() * 100 + 1);
         System.out.println(randomNumber);
         stats.guessCounter = 0;
+
+
     }
 
     public void end() {
