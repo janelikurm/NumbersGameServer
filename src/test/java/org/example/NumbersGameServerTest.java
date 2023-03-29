@@ -1,8 +1,6 @@
 package org.example;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.net.URI;
@@ -23,13 +21,13 @@ public class NumbersGameServerTest {
 
     @Test
     void gameStatus() {
-        createAndStartSession();
+        startSessionViaLoginRequest();
         assertEquals(200, doRequest("/status", "", "GET"));
     }
 
     @Test
-    void startGame() {
-        createAndStartSession();
+    void startGameTest() {
+        startSessionViaLoginRequest();
         assertEquals(200, doRequest("/start-game", "", "POST"));
         assertEquals(400, doRequest("/start-game", "", "POST"));
     }
@@ -44,7 +42,7 @@ public class NumbersGameServerTest {
 
     @Test
     void guessNumberCorrectInput() {
-        runGame();
+        startGame();
         for (int i = 1; i <= 100; i++) {
             if (stopNumberGameGuessing.equals("LESS")) {
                 assertEquals("LESS", doRequestAndReturnBody("/guess", String.valueOf(i), "POST"));
@@ -65,26 +63,26 @@ public class NumbersGameServerTest {
 
     @Test
     void guessNumberStringInput() {
-        createAndStartSession();
+        startSessionViaLoginRequest();
         assertEquals(400, doRequest("/guess", "string", "POST"));
         assertEquals(400, doRequest("/guess", "st68ng", "POST"));
     }
 
     @Test
     void endGame() {
-        createAndStartSession();
-        runGame();
+        startSessionViaLoginRequest();
+        startGame();
         assertEquals(200, doRequest("/end-game", "", "POST"));
         assertEquals(400, doRequest("/end-game", "", "POST"));
         sessionId = "invalidSessionId";
         assertEquals(401, doRequest("/end-game", "", "POST"));
     }
 
-    private void runGame() {
+    private void startGame() {
         doRequest("/start-game", "", "POST");
     }
 
-    private void createAndStartSession() {
+    private void startSessionViaLoginRequest() {
         doRequest("/login", "", "POST");
 
     }
